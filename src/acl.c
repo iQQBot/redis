@@ -1156,6 +1156,11 @@ int ACLCheckCommandPerm(client *c, int *keyidxptr) {
             listIter li;
             listNode *ln;
             listRewind(u->patterns,&li);
+            //#TTT 添加用户名@
+            if (c->user && strcmp(c->user->name, "default")) {
+                int idx = keyidx[j];
+                c->argv[idx]->ptr = sdscatfmt(sdsdup(c->user->name), "@%S", c->argv[idx]->ptr);
+            }
 
             /* Test this key against every pattern. */
             int match = 0;
@@ -2018,15 +2023,26 @@ void authCommand(client *c) {
     if (c->argc == 2) {
         /* Mimic the old behavior of giving an error for the two commands
          * from if no password is configured. */
-        if (DefaultUser->flags & USER_FLAG_NOPASS) {
-            addReplyError(c,"AUTH <password> called without any password "
+
+        // #TTT 兼容旧版SDK登录
+        int count;
+        sds *argv = sdssplitlen(c->argv[1]->ptr, sdslen(c->argv[1]->ptr), ":", 1, &count);
+        
+        if (count == 1) {
+            if (DefaultUser->flags & USER_FLAG_NOPASS) {
+                sdsfreesplitres(argv, count);
+                addReplyError(c,"AUTH <password> called without any password "
                             "configured for the default user. Are you sure "
                             "your configuration is correct?");
-            return;
+                return;
+            }
+            username = createStringObject("default",7);
+            password = c->argv[1];
+        } else {
+            username = createRawStringObject(argv[0],sdslen(argv[0]));
+            password = createRawStringObject(argv[1],sdslen(argv[1]));
         }
-
-        username = createStringObject("default",7);
-        password = c->argv[1];
+        sdsfreesplitres(argv, count);
     } else {
         username = c->argv[1];
         password = c->argv[2];

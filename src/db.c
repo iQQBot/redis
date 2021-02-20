@@ -729,6 +729,12 @@ void keysCommand(client *c) {
     int plen = sdslen(pattern), allkeys;
     unsigned long numkeys = 0;
     void *replylen = addReplyDeferredLen(c);
+    //#TTT 添加用户名@
+    if (c->user && strcmp(c->user->name, "default")) {
+        pattern = sdscatfmt(sdsdup(c->user->name), "@%S", pattern);
+        plen = sdslen(pattern);
+    }
+
 
     di = dictGetSafeIterator(c->db->dict);
     allkeys = (pattern[0] == '*' && plen == 1);
@@ -739,6 +745,13 @@ void keysCommand(client *c) {
         if (allkeys || stringmatchlen(pattern,plen,key,sdslen(key),0)) {
             keyobj = createStringObject(key,sdslen(key));
             if (!keyIsExpired(c->db,keyobj)) {
+                //#TTT 删除前缀
+                if (c->user && strcmp(c->user->name, "default")) {
+                    decrRefCount(keyobj); // 解除引用
+                    sds k = sdsdup(key);
+                    sdsrange(k, sdslen(c->user->name) + 1, -1);
+                    keyobj = createRawStringObject(k, sdslen(k));
+                }
                 addReplyBulk(c,keyobj);
                 numkeys++;
             }

@@ -586,8 +586,8 @@ struct redisCommand redisCommandTable[] = {
      0,NULL,1,-1,2,0,0,0},
 
     {"randomkey",randomkeyCommand,1,
-     "read-only random @keyspace",
-     0,NULL,0,0,0,0,0,0},
+     "admin read-only random @keyspace",
+     0,NULL,0,0,0,0,0,0}, //#TTT 禁止普通用户试用 RandomKey
 
     {"select",selectCommand,2,
      "ok-loading fast ok-stale @keyspace",
@@ -633,7 +633,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"scan",scanCommand,-2,
      "read-only random @keyspace",
-     0,NULL,0,0,0,0,0,0},
+     0,NULL,0,0,0,0,0,0}, //#TTT 禁止普通用户试用 Scan
 
     {"dbsize",dbsizeCommand,1,
      "read-only fast @keyspace",
@@ -703,11 +703,11 @@ struct redisCommand redisCommandTable[] = {
      0,NULL,0,0,0,0,0,0},
 
     {"flushdb",flushdbCommand,-1,
-     "write @keyspace @dangerous",
+     "admin write @keyspace @dangerous", // #TTT 禁止普通用户清空数据库
      0,NULL,0,0,0,0,0,0},
 
     {"flushall",flushallCommand,-1,
-     "write @keyspace @dangerous",
+     "admin write @keyspace @dangerous", // #TTT 禁止普通用户清空数据库
      0,NULL,0,0,0,0,0,0},
 
     {"sort",sortCommand,-2,
@@ -747,7 +747,7 @@ struct redisCommand redisCommandTable[] = {
      0,NULL,0,0,0,0,0,0},
 
     {"role",roleCommand,1,
-     "ok-loading ok-stale no-script fast read-only @dangerous",
+     "admin ok-loading ok-stale no-script fast read-only @dangerous", //#TTT 禁止普通用户查看服务器角色
      0,NULL,0,0,0,0,0,0},
 
     {"debug",debugCommand,-2,
@@ -795,11 +795,11 @@ struct redisCommand redisCommandTable[] = {
      0,NULL,0,0,0,0,0,0},
 
     {"restore",restoreCommand,-4,
-     "write use-memory @keyspace @dangerous",
+     "admin write use-memory @keyspace @dangerous", //#TTT 禁止普通用户反序列化
      0,NULL,1,1,1,0,0,0},
 
     {"restore-asking",restoreCommand,-4,
-    "write use-memory cluster-asking @keyspace @dangerous",
+    "admin write use-memory cluster-asking @keyspace @dangerous", //#TTT 禁止普通用户反序列化
     0,NULL,1,1,1,0,0,0},
 
     {"migrate",migrateCommand,-6,
@@ -819,7 +819,7 @@ struct redisCommand redisCommandTable[] = {
      0,NULL,0,0,0,0,0,0},
 
     {"dump",dumpCommand,2,
-     "read-only random @keyspace",
+     "read-only random @keyspace",  //#TTT 禁止普通用户转储
      0,NULL,1,1,1,0,0,0},
 
     {"object",objectCommand,-2,
@@ -841,20 +841,20 @@ struct redisCommand redisCommandTable[] = {
     /* EVAL can modify the dataset, however it is not flagged as a write
      * command since we do the check while running commands from Lua. */
     {"eval",evalCommand,-3,
-     "no-script @scripting",
-     0,evalGetKeys,0,0,0,0,0,0},
+     "admin no-script @scripting",
+     0,evalGetKeys,0,0,0,0,0,0}, //#TTT 禁止普通用户eval
 
     {"evalsha",evalShaCommand,-3,
-     "no-script @scripting",
-     0,evalGetKeys,0,0,0,0,0,0},
+     "admin no-script @scripting",
+     0,evalGetKeys,0,0,0,0,0,0}, //#TTT 禁止普通用户转储
 
     {"slowlog",slowlogCommand,-2,
      "admin random ok-loading ok-stale",
      0,NULL,0,0,0,0,0,0},
 
     {"script",scriptCommand,-2,
-     "no-script @scripting",
-     0,NULL,0,0,0,0,0,0},
+     "admin no-script @scripting",
+     0,NULL,0,0,0,0,0,0}, //#TTT 禁止普通用户执行 script
 
     {"time",timeCommand,1,
      "read-only random fast ok-loading ok-stale",
